@@ -38,7 +38,7 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto text-xs text-[#64748b]">
-          Temporada 2026/27
+          Temporada 2024/25
         </div>
       </div>
     </header>

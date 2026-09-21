@@ -27,7 +27,7 @@ interface ApiPlayerResponse {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const league = searchParams.get("league") || "39";
-  const season = searchParams.get("season") || "2026";
+  const season = searchParams.get("season") || "2024";
   const page = searchParams.get("page") || "1";
 
   const url = `${API_BASE}/players?league=${league}&season=${season}&page=${page}`;

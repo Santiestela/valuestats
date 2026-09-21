@@ -93,7 +93,7 @@ export default function MatchesPage() {
         <div>
           <h1 className="text-2xl font-bold text-white">Top Partidos por Estadística</h1>
           <p className="text-[#64748b] text-sm mt-1">
-            Las 5 grandes ligas — Temporada 2026/27 — {totalMatches} partidos almacenados
+            Las 5 grandes ligas — Temporada 2024/25 — {totalMatches} partidos almacenados
           </p>
           {lastSynced && (
             <p className="text-[#64748b] text-xs mt-0.5">

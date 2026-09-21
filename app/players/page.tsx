@@ -40,7 +40,7 @@ interface Player {
   redCards: number;
 }
 
-const SEASON = "2026";
+const SEASON = "2024";
 
 export default function PlayersPage() {
   const [leagues, setLeagues] = useState<League[]>([]);
@@ -105,7 +105,7 @@ export default function PlayersPage() {
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-[#64748b] bg-[#141824] border border-[#2d3748] px-3 py-1.5 rounded-lg">
-            Temporada 2026/27
+            Temporada 2024/25
           </span>
 
           {currentLeague && (

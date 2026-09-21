@@ -12,7 +12,7 @@ const BIG_5 = [
   { id: 61, name: "Ligue 1" },
 ];
 
-const SEASON = "2026";
+const SEASON = "2024";
 
 function apiHeaders() {
   return { "x-apisports-key": API_KEY };
@@ -36,9 +36,8 @@ export async function POST() {
   let requestsUsed = 0;
 
   for (const league of BIG_5) {
-    // last=10 sin season ni status — trae los 10 más recientes, filtramos FT en código
     const fixturesRes = await fetch(
-      `${API_BASE}/fixtures?league=${league.id}&last=10`,
+      `${API_BASE}/fixtures?league=${league.id}&season=${SEASON}&status=FT`,
       { headers: apiHeaders() }
     );
     requestsUsed++;
@@ -48,13 +47,17 @@ export async function POST() {
     }
 
     const fixturesData = await fixturesRes.json();
-    const allFixtures = fixturesData.response || [];
-    const fixtures = allFixtures.filter(
-      (f: { fixture: { status: { short: string } } }) => f.fixture.status.short === "FT"
-    );
-    if (fixtures.length === 0) {
-      errors.push(`Liga ${league.name}: 0 partidos terminados encontrados`);
+    const allFixtures: { fixture: { id: number; date: string; status: { short: string } }; league: { name: string; logo: string; round: string }; teams: { home: { name: string; logo: string }; away: { name: string; logo: string } }; goals: { home: number | null; away: number | null } }[] = fixturesData.response || [];
+
+    if (allFixtures.length === 0) {
+      errors.push(`Liga ${league.name}: 0 partidos encontrados para temporada ${SEASON}`);
     }
+
+    // Sort by date desc, take 10 most recent not yet stored
+    const fixtures = allFixtures
+      .filter((f) => !storedIds.has(f.fixture.id))
+      .sort((a, b) => new Date(b.fixture.date).getTime() - new Date(a.fixture.date).getTime())
+      .slice(0, 10);
 
     for (const fixture of fixtures) {
       const fId: number = fixture.fixture.id;
