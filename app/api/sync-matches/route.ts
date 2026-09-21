@@ -25,6 +25,11 @@ function getStat(stats: Array<{ type: string; value: number | string | null }>, 
 }
 
 export async function POST() {
+  const errors: string[] = [];
+
+  if (!API_KEY) return NextResponse.json({ error: "FOOTBALL_API_KEY no configurada" }, { status: 500 });
+  if (!API_BASE) return NextResponse.json({ error: "FOOTBALL_API_BASE no configurada" }, { status: 500 });
+
   const db = await readDB();
   const storedIds = new Set(db.matches.map((m) => m.fixtureId));
   const newMatches: MatchRecord[] = [];
@@ -36,10 +41,16 @@ export async function POST() {
       { headers: apiHeaders() }
     );
     requestsUsed++;
-    if (!fixturesRes.ok) continue;
+    if (!fixturesRes.ok) {
+      errors.push(`Liga ${league.id}: HTTP ${fixturesRes.status}`);
+      continue;
+    }
 
     const fixturesData = await fixturesRes.json();
     const fixtures = fixturesData.response || [];
+    if (fixtures.length === 0) {
+      errors.push(`Liga ${league.name}: 0 partidos encontrados para temporada ${SEASON}`);
+    }
 
     for (const fixture of fixtures) {
       const fId: number = fixture.fixture.id;
@@ -100,5 +111,6 @@ export async function POST() {
     synced: newMatches.length,
     total: db.matches.length,
     requestsUsed,
+    errors,
   });
 }
