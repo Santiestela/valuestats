@@ -28,23 +28,52 @@ export async function GET() {
     results.apiStatus = { error: String(e) };
   }
 
-  // Test Premier League last 3 fixtures (without season filter)
+  // Test 1: Premier League season 2025 plain (no last, no status)
   try {
-    const res = await fetch(`${API_BASE}/fixtures?league=39&last=3`, {
+    const res = await fetch(`${API_BASE}/fixtures?league=39&season=2025`, {
       headers: { "x-apisports-key": API_KEY },
     });
     const data = await res.json();
-    results.lastFixtures = {
-      ok: res.ok,
+    const sample = data.response?.[0];
+    results.pl2025 = {
       total: data.results,
-      fixtures: data.response?.map((f: { fixture: { date: string; status: { short: string } }; teams: { home: { name: string }; away: { name: string } } }) => ({
+      firstMatch: sample ? `${sample.teams.home.name} vs ${sample.teams.away.name} (${sample.fixture.date})` : null,
+    };
+  } catch (e) {
+    results.pl2025 = { error: String(e) };
+  }
+
+  // Test 2: Premier League season 2024 plain
+  try {
+    const res = await fetch(`${API_BASE}/fixtures?league=39&season=2024`, {
+      headers: { "x-apisports-key": API_KEY },
+    });
+    const data = await res.json();
+    const sample = data.response?.[0];
+    results.pl2024 = {
+      total: data.results,
+      firstMatch: sample ? `${sample.teams.home.name} vs ${sample.teams.away.name} (${sample.fixture.date})` : null,
+    };
+  } catch (e) {
+    results.pl2024 = { error: String(e) };
+  }
+
+  // Test 3: Any league last 3
+  try {
+    const res = await fetch(`${API_BASE}/fixtures?last=3`, {
+      headers: { "x-apisports-key": API_KEY },
+    });
+    const data = await res.json();
+    results.anyLast3 = {
+      total: data.results,
+      fixtures: data.response?.map((f: { fixture: { date: string; status: { short: string } }; league: { name: string }; teams: { home: { name: string }; away: { name: string } } }) => ({
         date: f.fixture.date,
-        status: f.fixture.status.short,
+        league: f.league.name,
         match: `${f.teams.home.name} vs ${f.teams.away.name}`,
       })),
     };
   } catch (e) {
-    results.lastFixtures = { error: String(e) };
+    results.anyLast3 = { error: String(e) };
   }
 
   // Test Redis connection
