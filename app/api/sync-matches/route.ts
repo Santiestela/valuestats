@@ -36,20 +36,24 @@ export async function POST() {
   let requestsUsed = 0;
 
   for (const league of BIG_5) {
+    // last=10 sin season ni status — trae los 10 más recientes, filtramos FT en código
     const fixturesRes = await fetch(
-      `${API_BASE}/fixtures?league=${league.id}&season=${SEASON}&status=FT&last=10`,
+      `${API_BASE}/fixtures?league=${league.id}&last=10`,
       { headers: apiHeaders() }
     );
     requestsUsed++;
     if (!fixturesRes.ok) {
-      errors.push(`Liga ${league.id}: HTTP ${fixturesRes.status}`);
+      errors.push(`Liga ${league.name}: HTTP ${fixturesRes.status}`);
       continue;
     }
 
     const fixturesData = await fixturesRes.json();
-    const fixtures = fixturesData.response || [];
+    const allFixtures = fixturesData.response || [];
+    const fixtures = allFixtures.filter(
+      (f: { fixture: { status: { short: string } } }) => f.fixture.status.short === "FT"
+    );
     if (fixtures.length === 0) {
-      errors.push(`Liga ${league.name}: 0 partidos encontrados para temporada ${SEASON}`);
+      errors.push(`Liga ${league.name}: 0 partidos terminados encontrados`);
     }
 
     for (const fixture of fixtures) {

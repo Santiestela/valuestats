@@ -29,34 +29,23 @@ export async function GET() {
     results.apiStatus = { error: String(e) };
   }
 
-  // Test Premier League season 2026
+  // Test Premier League last 3 fixtures (without season filter)
   try {
-    const res = await fetch(`${API_BASE}/fixtures?league=39&season=2026&status=FT&last=3`, {
+    const res = await fetch(`${API_BASE}/fixtures?league=39&last=3`, {
       headers: { "x-apisports-key": API_KEY },
     });
     const data = await res.json();
-    results.season2026 = {
+    results.lastFixtures = {
       ok: res.ok,
       total: data.results,
-      sample: data.response?.[0]?.fixture?.date,
+      fixtures: data.response?.map((f: { fixture: { date: string; status: { short: string } }; teams: { home: { name: string }; away: { name: string } } }) => ({
+        date: f.fixture.date,
+        status: f.fixture.status.short,
+        match: `${f.teams.home.name} vs ${f.teams.away.name}`,
+      })),
     };
   } catch (e) {
-    results.season2026 = { error: String(e) };
-  }
-
-  // Test season 2025 as fallback
-  try {
-    const res = await fetch(`${API_BASE}/fixtures?league=39&season=2025&status=FT&last=3`, {
-      headers: { "x-apisports-key": API_KEY },
-    });
-    const data = await res.json();
-    results.season2025 = {
-      ok: res.ok,
-      total: data.results,
-      sample: data.response?.[0]?.fixture?.date,
-    };
-  } catch (e) {
-    results.season2025 = { error: String(e) };
+    results.lastFixtures = { error: String(e) };
   }
 
   // Test KV connection
