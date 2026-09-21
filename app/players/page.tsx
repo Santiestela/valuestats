@@ -40,12 +40,11 @@ interface Player {
   redCards: number;
 }
 
-const SEASONS = ["2024", "2023", "2022", "2021"];
+const SEASON = "2024";
 
 export default function PlayersPage() {
   const [leagues, setLeagues] = useState<League[]>([]);
   const [selectedLeague, setSelectedLeague] = useState(39);
-  const [selectedSeason, setSelectedSeason] = useState("2024");
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -59,10 +58,10 @@ export default function PlayersPage() {
       });
   }, []);
 
-  const fetchPlayers = useCallback(async (league: number, season: string, p: number) => {
+  const fetchPlayers = useCallback(async (league: number, p: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/players?league=${league}&season=${season}&page=${p}`);
+      const res = await fetch(`/api/players?league=${league}&season=${SEASON}&page=${p}`);
       const data = await res.json();
       setPlayers(data.players || []);
       setTotalPages(data.pagination?.total || 1);
@@ -73,12 +72,12 @@ export default function PlayersPage() {
 
   useEffect(() => {
     setPage(1);
-    fetchPlayers(selectedLeague, selectedSeason, 1);
-  }, [selectedLeague, selectedSeason, fetchPlayers]);
+    fetchPlayers(selectedLeague, 1);
+  }, [selectedLeague, fetchPlayers]);
 
   const handlePage = (newPage: number) => {
     setPage(newPage);
-    fetchPlayers(selectedLeague, selectedSeason, newPage);
+    fetchPlayers(selectedLeague, newPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -105,22 +104,9 @@ export default function PlayersPage() {
         />
 
         <div className="flex items-center gap-3">
-          <span className="text-[#64748b] text-sm">Temporada:</span>
-          <div className="flex gap-1">
-            {SEASONS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSelectedSeason(s)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  selectedSeason === s
-                    ? "bg-[#10b981] text-white"
-                    : "bg-[#141824] text-[#94a3b8] hover:text-white border border-[#2d3748]"
-                }`}
-              >
-                {s}/{Number(s) + 1}
-              </button>
-            ))}
-          </div>
+          <span className="text-xs text-[#64748b] bg-[#141824] border border-[#2d3748] px-3 py-1.5 rounded-lg">
+            Temporada 2024/25
+          </span>
 
           {currentLeague && (
             <div className="ml-auto flex items-center gap-2 text-sm text-[#94a3b8]">
