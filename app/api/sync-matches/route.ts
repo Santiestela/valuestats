@@ -12,7 +12,7 @@ const BIG_5 = [
   { id: 61, name: "Ligue 1" },
 ];
 
-const SEASON = "2024";
+const SEASON = "2026";
 
 function apiHeaders() {
   return { "x-apisports-key": API_KEY };

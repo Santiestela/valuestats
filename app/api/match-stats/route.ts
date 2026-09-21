@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
     category,
     matches: sorted,
     total: db.matches.length,
-    lastSynced: db.lastSynced["2024"] || null,
+    lastSynced: db.lastSynced["2026"] || null,
     categories: CATEGORIES,
   });
 }
