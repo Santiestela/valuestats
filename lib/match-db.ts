@@ -1,4 +1,3 @@
-import { Redis } from "@upstash/redis";
 import fs from "fs";
 import path from "path";
 
@@ -36,19 +35,10 @@ interface DB {
 
 const EMPTY_DB: DB = { matches: [], lastSynced: {} };
 
-// Use Redis if credentials available, otherwise fall back to local JSON (dev mode)
-function isRedisConfigured() {
-  return !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+function isVercelKV() {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
-function getRedis() {
-  return new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  });
-}
-
-// Local file fallback for development
 const LOCAL_DB_PATH = path.join(process.cwd(), "data", "match-stats.json");
 
 function readLocalDB(): DB {
@@ -64,18 +54,19 @@ function writeLocalDB(db: DB): void {
   fs.writeFileSync(LOCAL_DB_PATH, JSON.stringify(db, null, 2), "utf-8");
 }
 
-// Public API
 export async function readDB(): Promise<DB> {
-  if (isRedisConfigured()) {
-    const data = await getRedis().get<DB>("valuestats:match-db");
+  if (isVercelKV()) {
+    const { kv } = await import("@vercel/kv");
+    const data = await kv.get<DB>("valuestats:match-db");
     return data ?? { ...EMPTY_DB };
   }
   return readLocalDB();
 }
 
 export async function writeDB(db: DB): Promise<void> {
-  if (isRedisConfigured()) {
-    await getRedis().set("valuestats:match-db", db);
+  if (isVercelKV()) {
+    const { kv } = await import("@vercel/kv");
+    await kv.set("valuestats:match-db", db);
   } else {
     writeLocalDB(db);
   }
