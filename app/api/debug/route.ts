@@ -10,8 +10,7 @@ export async function GET() {
   results.envVars = {
     FOOTBALL_API_KEY: API_KEY ? "✓ presente" : "✗ falta",
     FOOTBALL_API_BASE: API_BASE || "✗ falta",
-    KV_REST_API_URL: process.env.KV_REST_API_URL ? "✓ presente" : "✗ falta",
-    KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN ? "✓ presente" : "✗ falta",
+    REDIS_URL: process.env.REDIS_URL ? "✓ presente" : "✗ falta",
   };
 
   // Test API connection
@@ -48,18 +47,21 @@ export async function GET() {
     results.lastFixtures = { error: String(e) };
   }
 
-  // Test KV connection
+  // Test Redis connection
   try {
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const { kv } = await import("@vercel/kv");
-      await kv.set("test-connection", "ok");
-      const val = await kv.get("test-connection");
-      results.kvConnection = val === "ok" ? "✓ funciona" : "✗ falló";
+    if (process.env.REDIS_URL) {
+      const { createClient } = await import("redis");
+      const client = createClient({ url: process.env.REDIS_URL });
+      await client.connect();
+      await client.set("test-connection", "ok");
+      const val = await client.get("test-connection");
+      await client.disconnect();
+      results.redisConnection = val === "ok" ? "✓ funciona" : "✗ falló";
     } else {
-      results.kvConnection = "✗ variables KV no configuradas";
+      results.redisConnection = "✗ REDIS_URL no configurada";
     }
   } catch (e) {
-    results.kvConnection = { error: String(e) };
+    results.redisConnection = { error: String(e) };
   }
 
   return NextResponse.json(results, { status: 200 });
